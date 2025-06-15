@@ -1,8 +1,24 @@
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;700&display=swap");
+
 @import "tailwindcss";
+
+@tailwind utilities;
 
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  --main-purple: #635fc7;
+  --main-purple-hover: #a8a4ff;
+  --black: #000112;
+  --very-dark-grey: #20212c;
+  --dark-grey: #2b2c37;
+  --lines-dark: #3e3f4e;
+  --medium-grey: #828fa3;
+  --lines-light: #e4ebfa;
+  --light-grey: #f4f7fd;
+  --white: #ffffff;
+  --red: #ea5555;
+  --red-hover: #ff9898;
 }
 
 @theme inline {
@@ -10,6 +26,30 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-jakarta: "Plus Jakarta Sans", sans-serif;
+}
+
+@theme {
+  --color-main-purple: var(--main-purple);
+  --color-purple-hover: var(--main-purple-hover);
+  --color-black: var(--black);
+  --color-very-dark-grey: var(--very-dark-grey);
+  --color-dark-grey: var(--dark-grey);
+  --color-lines-dark: var(--lines-dark);
+  --color-medium-grey: var(--medium-grey);
+  --color-lines-light: var(--lines-light);
+  --color-light-grey: var(--light-grey);
+  --color-white: var(--white);
+  --color-red: var(--red);
+  --color-red-hover: var(--red-hover);
+  --text-xl: 1.5rem; /* 24px */
+  --text-xl-line-height: 1.875rem; /* 30px */
+  --text-lg: 1.125rem;
+  --text-lg-line-height: 1.4375rem;
+  --text-base: 1rem;
+  --text-base-line-height: 1.1875rem;
+  --text-sm: 0.75rem;
+  --text-sm-line-height: 1rem;
 }
 
 @media (prefers-color-scheme: dark) {
