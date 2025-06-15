@@ -1,12 +1,7 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+
 import "./globals.css";
 import { BoardProvider } from "@/lib/context/BoardContext";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -21,7 +16,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <BoardProvider>
-        <body className={`${geistSans.variable}  antialiased`}>{children}</body>
+        <body className={"  antialiased "}>{children}</body>
       </BoardProvider>
     </html>
   );
