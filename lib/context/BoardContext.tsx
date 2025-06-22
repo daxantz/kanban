@@ -22,7 +22,8 @@ type BoardAction =
   | {
       type: "TOGGLE_SUBTASK";
       payload: { columnName: string; taskTitle: string; subtaskIndex: number };
-    };
+    }
+  | { type: "SET_BOARD"; payload: Board };
 
 // ----- Initial State -----
 const initialState: BoardState = {
@@ -84,6 +85,13 @@ function boardReducer(state: BoardState, action: BoardAction): BoardState {
               }),
             };
           }),
+        },
+      };
+    case "SET_BOARD":
+      return {
+        ...state,
+        board: {
+          ...action.payload,
         },
       };
 
