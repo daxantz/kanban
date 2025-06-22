@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { BoardProvider } from "@/lib/context/BoardContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { Navbar } from "@/components/Navbar";
+import Sidebar from "@/components/Sidebar";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -16,14 +18,22 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="antialiased">
+      <body className="antialiased font-jakarta">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          <BoardProvider>{children}</BoardProvider>
+          <BoardProvider>
+            <div className="flex">
+              <Sidebar />
+              <main className="w-full">
+                <Navbar />
+                {children}
+              </main>
+            </div>
+          </BoardProvider>
         </ThemeProvider>
       </body>
     </html>

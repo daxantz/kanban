@@ -11,11 +11,7 @@ const Sidebar = () => {
 
   if (isHidden) return <SidebarToggle setIsHidden={setIsHidden} />;
   return (
-    <div
-      className={
-        "border border-green-400 h-screen w-1/4  md:flex  md:flex-col hidden "
-      }
-    >
+    <div className={" h-screen w-1/4  md:flex  md:flex-col hidden "}>
       <div className="pl-[26px] pt-[32px] pr-[82px]">
         <div className=" md:flex items-center gap-4 hidden  mr-[82px]">
           <Image
