@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -14,9 +13,11 @@ import Image from "next/image";
 import { useBoardContext } from "@/lib/context/BoardContext";
 
 import DarkmodeToggle from "./DarkmodeToggle";
-import { Board } from "@/lib/types";
+import { Board, Task } from "@/lib/types";
 import BoardToggle from "./BoardToggle";
 import { Dropdown } from "./Dropdown";
+import { DropdownMenuItem } from "./ui/dropdown-menu";
+import DeleteDescription from "./DeleteDescription";
 
 // const components: { title: string; href: string; description: string }[] = [
 //   {
@@ -125,13 +126,19 @@ export function Navbar() {
             + Add New Task
           </span>
         </Button>
-        <Dropdown />
+        <Dropdown>
+          <DropdownMenuItem className="text-medium-grey ">
+            Edit Board
+          </DropdownMenuItem>
+
+          <DeleteConfirmationDialog item={state.board} />
+        </Dropdown>
       </div>
     </div>
   );
 }
 
-export function DeleteConfirmationDialog({ board }: { board: Board }) {
+export function DeleteConfirmationDialog({ item }: { item: Board | Task }) {
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -142,37 +149,33 @@ export function DeleteConfirmationDialog({ board }: { board: Board }) {
             height={16}
             alt="ellipsis"
           /> */}
-          Delete Board
+          Delete {"name" in item ? "board" : "task"}
         </Button>
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" showCloseButton={false}>
         <DialogHeader className="text-left flex gap-6">
           <DialogTitle className="text-red text-lg">
-            Delete this board?
+            Delete this {"name" in item ? "board" : "task"}?
           </DialogTitle>
-          <DialogDescription className="text-medium-grey text-base">
-            Are you sure you want to delete the{" "}
-            <span>&quot;{board.name}&quot;</span> board? This action will remove
-            all columns and tasks and cannot be reversed.
-          </DialogDescription>
+          <DeleteDescription item={item} />
         </DialogHeader>
 
-        <DialogFooter className="flex gap-4 mt-6 justify-evenly">
-          <Button
-            variant="destructive"
-            className="bg-red rounded-[20px] font-bold px-20 hover:bg-red-hover hover:cursor-pointer"
-          >
-            Delete
-          </Button>
+        <DialogFooter className="flex gap-4 mt-6 ">
           <DialogTrigger asChild>
             <Button
               variant="secondary"
-              className="rounded-[20px] text-main-purple font-bold px-20 hover:bg-purple-hover hover:cursor-pointer"
+              className="rounded-[20px] text-main-purple font-bold px-20 hover:bg-purple-hover hover:cursor-pointer md:order-2"
             >
               Cancel
             </Button>
           </DialogTrigger>
+          <Button
+            variant="destructive"
+            className="bg-red rounded-[20px] font-bold px-20 hover:bg-red-hover hover:cursor-pointer md:order-1"
+          >
+            Delete
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
