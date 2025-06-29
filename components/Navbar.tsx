@@ -18,6 +18,7 @@ import BoardToggle from "./BoardToggle";
 import { Dropdown } from "./Dropdown";
 import { DropdownMenuItem } from "./ui/dropdown-menu";
 import DeleteDescription from "./DeleteDescription";
+import TaskForm from "./TaskForm";
 
 // const components: { title: string; href: string; description: string }[] = [
 //   {
@@ -113,19 +114,7 @@ export function Navbar() {
       </div>
 
       <div className="flex gap-6">
-        <Button className="bg-main-purple rounded-3xl hover:bg-purple-hover hover:cursor-pointer">
-          <Image
-            src={"/icon-add-task-mobile.svg"}
-            width={12}
-            height={12}
-            alt="add icon"
-            className="md:hidden"
-          />
-          <span className="hidden md:inline font-base font-bold">
-            {" "}
-            + Add New Task
-          </span>
-        </Button>
+        <TaskForm mode="create" />
         <Dropdown>
           <DropdownMenuItem className="text-medium-grey ">
             Edit Board
@@ -142,7 +131,10 @@ export function DeleteConfirmationDialog({ item }: { item: Board | Task }) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" className="self-end text-red">
+        <Button
+          variant="ghost"
+          className="self-end text-red w-full hover:cursor-pointer"
+        >
           {/* <Image
             src={"/icon-vertical-ellipsis.svg"}
             width={4}

@@ -30,7 +30,7 @@ const Sidebar = () => {
         <div className="flex flex-col gap-4">
           <DarkmodeToggle />
           <Button
-            className="group flex ml-5 gap-2 bg-white  hover:bg-light-grey hover:cursor-pointer rounded-r-full py-3 pr-8"
+            className="group flex ml-5 gap-2 bg-white  hover:bg-light-grey hover:cursor-pointer rounded-r-full py-3 pr-8 dark:bg-dark-grey"
             onClick={() => setIsHidden(!isHidden)}
           >
             <svg
@@ -43,7 +43,7 @@ const Sidebar = () => {
               stroke-width="2"
               stroke-linecap="round"
               stroke-linejoin="round"
-              className="text-dark-grey group-hover:text-main-purple transition-colors"
+              className="text-medium-grey group-hover:text-main-purple transition-colors"
             >
               <path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49" />
               <path d="M14.084 14.158a3 3 0 0 1-4.242-4.242" />

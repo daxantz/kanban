@@ -12,7 +12,7 @@ export function Dropdown({ children }: { children: React.ReactNode }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button className="p-2 hover:opacity-70 bg-transparent hover">
+        <Button className="p-2 hover:opacity-70 bg-transparent hover:cursor-pointer hover:bg-transparent">
           <Image
             src="/icon-vertical-ellipsis.svg"
             width={4}
