@@ -5,7 +5,8 @@ import { ToggleGroup, ToggleGroupItem } from "./ui/toggle-group";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { useBoardContext } from "@/lib/context/BoardContext";
-import { Button } from "./ui/button";
+
+import BoardForm from "./BoardForm";
 
 const BoardToggle = () => {
   const { state, dispatch } = useBoardContext();
@@ -51,7 +52,7 @@ const BoardToggle = () => {
           </ToggleGroupItem>
         ))}
       </ToggleGroup>
-      <Button
+      {/* <Button
         className="text-main-purple bg-transparent justify-start p-0 pl-6 text-base font-bold w-full hover:cursor-pointer hover:bg-light-grey"
         disabled={!state.board.columns}
       >
@@ -62,7 +63,8 @@ const BoardToggle = () => {
           alt="board logo"
         />
         + Create New Board
-      </Button>
+      </Button> */}
+      <BoardForm mode="create" />
     </div>
   );
 };
