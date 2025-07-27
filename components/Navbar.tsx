@@ -16,9 +16,10 @@ import DarkmodeToggle from "./DarkmodeToggle";
 import { Board, Task } from "@/lib/types";
 import BoardToggle from "./BoardToggle";
 import { Dropdown } from "./Dropdown";
-import { DropdownMenuItem } from "./ui/dropdown-menu";
+
 import DeleteDescription from "./DeleteDescription";
 import TaskForm from "./TaskForm";
+import BoardForm from "./BoardForm";
 
 // const components: { title: string; href: string; description: string }[] = [
 //   {
@@ -116,9 +117,10 @@ export function Navbar() {
       <div className="flex gap-6">
         <TaskForm mode="create" />
         <Dropdown>
-          <DropdownMenuItem className="text-medium-grey ">
+          {/* <DropdownMenuItem className="text-medium-grey ">
             Edit Board
-          </DropdownMenuItem>
+          </DropdownMenuItem> */}
+          <BoardForm mode="edit" board={state.board} />
 
           <DeleteConfirmationDialog item={state.board} />
         </Dropdown>
