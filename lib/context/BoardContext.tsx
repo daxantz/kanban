@@ -12,6 +12,7 @@ import boardData from "@/data.json";
 // ----- State Type -----
 type BoardState = {
   board: Board;
+  allBoards: Board[];
 };
 
 // ----- Action Types -----
@@ -21,11 +22,13 @@ type BoardAction =
   | {
       type: "TOGGLE_SUBTASK";
       payload: { columnName: string; taskTitle: string; subtaskIndex: number };
-    };
+    }
+  | { type: "SET_BOARD"; payload: Board };
 
 // ----- Initial State -----
 const initialState: BoardState = {
   board: boardData.boards[0],
+  allBoards: boardData.boards,
 };
 
 // ----- Reducer -----
@@ -82,6 +85,13 @@ function boardReducer(state: BoardState, action: BoardAction): BoardState {
               }),
             };
           }),
+        },
+      };
+    case "SET_BOARD":
+      return {
+        ...state,
+        board: {
+          ...action.payload,
         },
       };
 

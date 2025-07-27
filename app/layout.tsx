@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 
 import "./globals.css";
 import { BoardProvider } from "@/lib/context/BoardContext";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { Navbar } from "@/components/Navbar";
+import Sidebar from "@/components/Sidebar";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -14,10 +17,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <BoardProvider>
-        <body className={"  antialiased "}>{children}</body>
-      </BoardProvider>
+    <html lang="en" suppressHydrationWarning>
+      <body className="antialiased font-jakarta">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <BoardProvider>
+            <div className="flex">
+              <Sidebar />
+              <main className="w-full">
+                <Navbar />
+                {children}
+              </main>
+            </div>
+          </BoardProvider>
+        </ThemeProvider>
+      </body>
     </html>
   );
 }
