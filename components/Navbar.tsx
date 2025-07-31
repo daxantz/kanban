@@ -20,6 +20,7 @@ import { Dropdown } from "./Dropdown";
 import DeleteDescription from "./DeleteDescription";
 import TaskForm from "./TaskForm";
 import BoardForm from "./BoardForm";
+import { signOut, useSession } from "next-auth/react";
 
 // const components: { title: string; href: string; description: string }[] = [
 //   {
@@ -61,9 +62,18 @@ import BoardForm from "./BoardForm";
 
 export function Navbar() {
   const { state } = useBoardContext();
-
+  const { data } = useSession();
+  // console.log(session?.user);
   const [isOpen, setIsOpen] = React.useState(false);
+  const userName = data?.user.name?.split(" ")[0];
 
+  // if (!session)
+  //   return (
+  //     <div>
+  //       <p>not logged in</p>
+  //       <button onClick={() => signIn("google")}>google sign in</button>
+  //     </div>
+  //   );
   return (
     <div className="flex px-4 py-5 justify-between border-b-4">
       {/* <div className=" md:flex items-center gap-4 hidden ">
@@ -114,7 +124,17 @@ export function Navbar() {
         </Dialog>
       </div>
 
-      <div className="flex gap-6">
+      <div className="flex gap-4">
+        {/* {data?.user.image && (
+          <Image
+            src={data?.user?.image}
+            alt="user profile image"
+            width={38}
+            height={48}
+            className="rounded-full "
+          />
+        )} */}
+        <p className="self-center">Welcome, {userName}</p>
         <TaskForm mode="create" />
         <Dropdown>
           {/* <DropdownMenuItem className="text-medium-grey ">
@@ -123,6 +143,9 @@ export function Navbar() {
           <BoardForm mode="edit" board={state.board} />
 
           <DeleteConfirmationDialog item={state.board} />
+          <Button className="w-full" onClick={() => signOut()}>
+            sign out
+          </Button>
         </Dropdown>
       </div>
     </div>
