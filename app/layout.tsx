@@ -9,6 +9,7 @@ import SessionWrapper from "@/components/SessionWrapper";
 import { getServerSession } from "next-auth";
 import SignIn from "@/components/SignIn";
 import { authOptions } from "@/lib/authOptions";
+import { prisma } from "@/lib/prisma";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -21,7 +22,22 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const session = await getServerSession(authOptions);
-
+  const boards = await prisma.board.findMany({
+    where: {
+      ownerId: session?.user.id,
+    },
+    include: {
+      columns: {
+        include: {
+          tasks: {
+            include: {
+              subtasks: true,
+            },
+          },
+        },
+      },
+    },
+  });
   return (
     <html lang="en" suppressHydrationWarning>
       <body className="antialiased font-jakarta">
@@ -32,7 +48,7 @@ export default async function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            <BoardProvider>
+            <BoardProvider initialBoards={boards}>
               {session ? (
                 <div className="flex">
                   <Sidebar />
