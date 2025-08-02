@@ -23,7 +23,7 @@ model User {
   sessions      Session[]
   // Optional for WebAuthn support
   Authenticator Authenticator[]
- 
+ boards Board[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -81,4 +81,37 @@ model Authenticator {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
  
   @@id([userId, credentialID])
+}
+model Board {
+  id        String   @id @default(cuid())
+  name      String
+  ownerId   String
+  owner     User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  columns    Column[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Column {
+  id        String   @id @default(cuid())
+  name      String
+  boardId   String
+  board    Board     @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  tasks    Task[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Task {
+  id        String   @id @default(cuid())
+  title    String
+  columnId   String
+  column    Column     @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  parentId      String?   // Null means it's a parent task
+  parent        Task?     @relation("Subtasks", fields: [parentId], references: [id])
+  subtasks      Task[]    @relation("Subtasks") // The children
+  description String?
+  status String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
