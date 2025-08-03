@@ -1,19 +1,5 @@
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useFieldArray, useForm } from "react-hook-form";
-import { z } from "zod";
+import React, { useActionState } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-
-import { useBoardContext } from "@/lib/context/BoardContext";
-import { X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -21,147 +7,152 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
-
 import Image from "next/image";
-import React from "react";
-import { Board } from "@/lib/types";
+import { X } from "lucide-react";
+import { createBoard } from "@/app/actions/actions";
+import { FullBoard } from "@/lib/types";
 
 type BoardFormProps = {
   mode: "create" | "edit";
-  board?: Board;
+  board?: FullBoard | null;
 };
 
-const formSchema = z.object({
-  name: z.string().min(1, { message: "Name is required" }),
-
-  columns: z.array(z.string().optional()),
-});
-type BoardFormData = z.infer<typeof formSchema>;
+const initialState = {
+  message: "",
+};
 
 const BoardForm = ({ mode, board }: BoardFormProps) => {
-  const form = useForm<BoardFormData>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: mode === "edit" ? board?.name : "",
-
-      columns:
-        mode === "edit"
-          ? board?.columns.map((board) => board.name) || [""]
-          : [""],
-    },
-  });
-
-  const { fields, append, remove } = useFieldArray({
-    control: form.control,
-    name: "columns" as never,
-  });
-
-  const { state } = useBoardContext();
-
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-
-    // ✅ This will be type-safe and validated.
-    // eslint-disable-next-line
-    console.log(values);
+  const [columns, setColumns] = React.useState<string[]>(
+    mode === "edit" && board?.columns.length
+      ? board.columns.map((col) => col.name)
+      : [""]
+  );
+  const [state, formAction] = useActionState(createBoard, initialState);
+  function addColumn() {
+    setColumns((prev) => [...prev, ""]);
   }
+
+  function removeColumn(index: number) {
+    setColumns((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  // function updateColumnName(index: number, value: string) {
+  //   setColumns((prev) => {
+  //     const newCols = [...prev];
+  //     newCols[index] = value;
+  //     return newCols;
+  //   });
+  // }
+
   return (
     <Dialog>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
-          <DialogTrigger asChild>
-            {mode === "create" ? (
-              <Button
-                className="text-main-purple bg-transparent justify-start p-0 pl-6 text-base font-bold w-full hover:cursor-pointer hover:bg-light-grey"
-                disabled={!state.board.columns}
-              >
-                <Image
-                  src="/icon-add-board.svg"
-                  width={12}
-                  height={12}
-                  alt="add icon"
-                  className="md:hidden"
-                />
-                <span className="hidden md:inline font-base font-bold">
-                  + Create New Board
-                </span>
-              </Button>
-            ) : (
-              <Button className="bg-transparent text-black w-full hover:bg-light-grey hover:cursor-pointer">
-                Edit Board
-              </Button>
-            )}
-          </DialogTrigger>
+      {/* This is the button that opens the dialog */}
+      <DialogTrigger asChild>
+        {mode === "create" ? (
+          <Button
+            className="text-main-purple bg-transparent justify-start p-0 pl-6 text-base font-bold w-full hover:cursor-pointer hover:bg-light-grey"
+            disabled={columns.length === 0}
+            type="button"
+          >
+            <Image
+              src="/icon-add-board.svg"
+              width={12}
+              height={12}
+              alt="add icon"
+              className="md:hidden"
+            />
+            <span className="hidden md:inline font-base font-bold">
+              + Create New Board
+            </span>
+          </Button>
+        ) : (
+          <Button
+            className="bg-transparent text-black w-full hover:bg-light-grey hover:cursor-pointer"
+            type="button"
+          >
+            Edit Board
+          </Button>
+        )}
+      </DialogTrigger>
 
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle className="text-left mb-6">
-                {mode === "create" ? "Add New Board" : "Edit Board"}
-              </DialogTitle>
-            </DialogHeader>
+      {/* The form is inside the dialog content */}
+      <DialogContent>
+        <form
+          method="post"
+          action={formAction} // Your server action or API route
+          className="w-full"
+        >
+          <DialogHeader>
+            <DialogTitle className="text-left mb-6">
+              {mode === "create" ? "Add New Board" : "Edit Board"}
+            </DialogTitle>
+            <p>{state.message}</p>
+          </DialogHeader>
 
-            {/* Board Name */}
-            <div className="mb-6">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-medium-grey font-bold">
-                      Board Name
-                    </FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g. Marketing Plan" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+          {/* Board Name */}
+          <div className="mb-6">
+            <label
+              htmlFor="name"
+              className="text-medium-grey font-bold block mb-2"
+            >
+              Board Name
+            </label>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              defaultValue={mode === "edit" ? board?.name : ""}
+              placeholder="e.g. Marketing Plan"
+              required
+              className="w-full rounded border px-3 py-2"
+            />
+          </div>
 
-            {/* Board Columns */}
-            <div className="flex flex-col gap-3 mb-6">
-              <FormLabel className="self-start text-medium-grey font-bold">
-                Board Columns
-              </FormLabel>
-              {fields.map((field, index) => (
-                <FormField
-                  key={field.id}
-                  control={form.control}
+          {/* Board Columns */}
+          <div className="flex flex-col gap-3 mb-6">
+            <label className="self-start text-medium-grey font-bold mb-2">
+              Board Columns
+            </label>
+
+            {columns.map((col, index) => (
+              <div key={col} className="flex items-center gap-2">
+                <input
+                  type="text"
                   name={`columns.${index}`}
-                  render={({ field }) => (
-                    <FormItem className="flex items-center gap-2">
-                      <FormControl>
-                        <Input placeholder={`Column ${index + 1}`} {...field} />
-                      </FormControl>
-                      <X
-                        width={15}
-                        height={15}
-                        color="#828FA3"
-                        onClick={() => remove(index)}
-                        className="cursor-pointer"
-                      />
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                  // onChange={(e) => updateColumnName(index, e.target.value)}
+                  placeholder={`Column ${index + 1}`}
+                  className="flex-grow rounded border px-3 py-2"
                 />
-              ))}
-              <Button
-                className="text-main-purple font-bold rounded-3xl py-2 px-[110px]"
-                type="button"
-                variant="secondary"
-                onClick={() => append("")}
-              >
-                + Add Column
-              </Button>
-            </div>
+                <button
+                  type="button"
+                  onClick={() => removeColumn(index)}
+                  className="text-gray-500 hover:text-red-600"
+                  aria-label={`Remove column ${index + 1}`}
+                >
+                  <X width={15} height={15} />
+                </button>
+              </div>
+            ))}
 
-            <Button className="bg-main-purple rounded-3xl py-2 px-[110px] font-bold text-white">
-              {mode === "create" ? "Create New Board" : "Save Changes"}
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={addColumn}
+              className="text-main-purple font-bold rounded-3xl py-2 px-[110px]"
+            >
+              + Add Column
             </Button>
-          </DialogContent>
+          </div>
+
+          {/* This is the submit button */}
+          <Button
+            type="submit"
+            className="bg-main-purple rounded-3xl py-2 px-[110px] font-bold text-white"
+          >
+            {mode === "create" ? "Create New Board" : "Save Changes"}
+          </Button>
         </form>
-      </Form>
+      </DialogContent>
     </Dialog>
   );
 };

@@ -7,27 +7,28 @@ import { cn } from "@/lib/utils";
 import { useBoardContext } from "@/lib/context/BoardContext";
 
 import BoardForm from "./BoardForm";
+import { useRouter } from "next/navigation";
 
 const BoardToggle = () => {
-  const { state, dispatch } = useBoardContext();
-  const [value, setValue] = React.useState(state.board.name);
+  const { boards, selectedBoard, setSelectedBoard } = useBoardContext();
+  const [value, setValue] = React.useState(selectedBoard?.name);
+  const router = useRouter();
   function handleBoardChange(boardName: string) {
     if (!boardName) return;
 
     setValue(boardName);
 
-    const selectedBoard = state.allBoards.find(
-      (board) => board.name === boardName
-    );
+    const selectedBoard = boards.find((board) => board.name === boardName);
 
     if (selectedBoard) {
-      dispatch({ type: "SET_BOARD", payload: selectedBoard });
+      setSelectedBoard(selectedBoard);
+      router.push(`?board=${selectedBoard.id}`);
     }
   }
   return (
     <div>
       <p className="ml-6 mb-[19px] font-bold text-medium-grey text-base">
-        ALL BOARDS ({state.allBoards.length})
+        ALL BOARDS ({boards.length})
       </p>
       <ToggleGroup
         type="single"
@@ -35,7 +36,7 @@ const BoardToggle = () => {
         value={value}
         onValueChange={handleBoardChange}
       >
-        {state.allBoards.map((board) => (
+        {boards.map((board) => (
           <ToggleGroupItem
             key={board.name}
             value={board.name}

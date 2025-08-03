@@ -1,120 +1,36 @@
 "use client";
 
-import React, {
-  createContext,
-  useReducer,
-  useContext,
-  ReactNode,
-  Dispatch,
-} from "react";
-import { Board, Task } from "@/lib/types";
-import boardData from "@/data.json";
-// ----- State Type -----
-type BoardState = {
-  board: Board;
-  allBoards: Board[];
-};
+import React, { createContext, useContext, ReactNode, useState } from "react";
 
-// ----- Action Types -----
-type BoardAction =
-  | { type: "ADD_COLUMN"; payload: string }
-  | { type: "ADD_TASK"; payload: { columnName: string; task: Task } }
-  | {
-      type: "TOGGLE_SUBTASK";
-      payload: { columnName: string; taskTitle: string; subtaskIndex: number };
-    }
-  | { type: "SET_BOARD"; payload: Board };
-
-// ----- Initial State -----
-const initialState: BoardState = {
-  board: boardData.boards[0],
-  allBoards: boardData.boards,
-};
-
-// ----- Reducer -----
-function boardReducer(state: BoardState, action: BoardAction): BoardState {
-  switch (action.type) {
-    case "ADD_COLUMN":
-      return {
-        ...state,
-        board: {
-          ...state.board,
-          columns: [
-            ...state.board.columns,
-            { name: action.payload, tasks: [] },
-          ],
-        },
-      };
-
-    case "ADD_TASK":
-      return {
-        ...state,
-        board: {
-          ...state.board,
-          columns: state.board.columns.map((col) =>
-            col.name === action.payload.columnName
-              ? {
-                  ...col,
-                  tasks: [...col.tasks, action.payload.task],
-                }
-              : col
-          ),
-        },
-      };
-
-    case "TOGGLE_SUBTASK":
-      return {
-        ...state,
-        board: {
-          ...state.board,
-          columns: state.board.columns.map((col) => {
-            if (col.name !== action.payload.columnName) return col;
-
-            return {
-              ...col,
-              tasks: col.tasks.map((task) => {
-                if (task.title !== action.payload.taskTitle) return task;
-
-                const updatedSubtasks = task.subtasks.map((sub, idx) =>
-                  idx === action.payload.subtaskIndex
-                    ? { ...sub, isCompleted: !sub.isCompleted }
-                    : sub
-                );
-
-                return { ...task, subtasks: updatedSubtasks };
-              }),
-            };
-          }),
-        },
-      };
-    case "SET_BOARD":
-      return {
-        ...state,
-        board: {
-          ...action.payload,
-        },
-      };
-
-    default:
-      return state;
-  }
-}
+import { FullBoard } from "../types";
 
 // ----- Context -----
-const BoardContext = createContext<{
-  state: BoardState;
-  dispatch: Dispatch<BoardAction>;
-}>({
-  state: initialState,
-  dispatch: () => null,
-});
+
+type BoardContextType = {
+  boards: FullBoard[];
+  setBoards: React.Dispatch<React.SetStateAction<FullBoard[]>>;
+  selectedBoard: FullBoard | null;
+  setSelectedBoard: React.Dispatch<React.SetStateAction<FullBoard | null>>;
+};
+const BoardContext = createContext<BoardContextType | null>(null);
 
 // ----- Provider -----
-export function BoardProvider({ children }: { children: ReactNode }) {
-  const [state, dispatch] = useReducer(boardReducer, initialState);
+export function BoardProvider({
+  children,
+  initialBoards,
+}: {
+  children: ReactNode;
+  initialBoards: FullBoard[];
+}) {
+  const [boards, setBoards] = useState<FullBoard[]>(initialBoards);
+  const [selectedBoard, setSelectedBoard] = useState<FullBoard | null>(
+    initialBoards[0] || null
+  );
 
   return (
-    <BoardContext.Provider value={{ state, dispatch }}>
+    <BoardContext.Provider
+      value={{ boards, setBoards, selectedBoard, setSelectedBoard }}
+    >
       {children}
     </BoardContext.Provider>
   );

@@ -1,21 +1,19 @@
-export type Task = {
-  title: string;
-  description: string;
-  status: string;
+import type { Board, Column, Task } from "@prisma/client";
+
+// Subtask is just a Task with a parent
+export type Subtask = Task;
+
+// Task includes nested subtasks (self-reference)
+export type FullTask = Task & {
   subtasks: Subtask[];
 };
 
-export type Subtask = {
-  title: string;
-  isCompleted: boolean;
+// Column includes tasks (with subtasks)
+export type FullColumn = Column & {
+  tasks: FullTask[];
 };
 
-export type Board = {
-  name: string;
-  columns: Column[];
-};
-
-export type Column = {
-  name: string;
-  tasks: Task[];
+// Board includes columns (with tasks + subtasks)
+export type FullBoard = Board & {
+  columns: FullColumn[];
 };
