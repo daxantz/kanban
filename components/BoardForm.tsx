@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -10,14 +10,11 @@ import {
 import Image from "next/image";
 import { X } from "lucide-react";
 import { createBoard } from "@/app/actions/actions";
-import { useFormState } from "react-dom";
+import { FullBoard } from "@/lib/types";
 
 type BoardFormProps = {
   mode: "create" | "edit";
-  board?: {
-    name: string;
-    columns: { id: string; name: string }[];
-  };
+  board?: FullBoard | null;
 };
 
 const initialState = {
@@ -30,7 +27,7 @@ const BoardForm = ({ mode, board }: BoardFormProps) => {
       ? board.columns.map((col) => col.name)
       : [""]
   );
-  const [state, formAction] = useFormState(createBoard, initialState);
+  const [state, formAction] = useActionState(createBoard, initialState);
   function addColumn() {
     setColumns((prev) => [...prev, ""]);
   }
