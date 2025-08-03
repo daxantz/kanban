@@ -13,7 +13,7 @@ import Image from "next/image";
 import { useBoardContext } from "@/lib/context/BoardContext";
 
 import DarkmodeToggle from "./DarkmodeToggle";
-import { Board, Task } from "@/lib/types";
+import { FullBoard, FullTask } from "@/lib/types";
 import BoardToggle from "./BoardToggle";
 import { Dropdown } from "./Dropdown";
 
@@ -61,7 +61,7 @@ import { signOut, useSession } from "next-auth/react";
 // ];
 
 export function Navbar() {
-  const { state } = useBoardContext();
+  const { boards, selectedBoard } = useBoardContext();
   const { data } = useSession();
   // console.log(session?.user);
   const [isOpen, setIsOpen] = React.useState(false);
@@ -99,7 +99,7 @@ export function Navbar() {
 
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger className="font-bold flex items-center gap-2 hover:cursor-pointer">
-            {state.board.name}
+            {selectedBoard?.name}
             <Image
               alt="chevron"
               width={8}
@@ -114,7 +114,7 @@ export function Navbar() {
             <div>
               <DialogHeader>
                 <DialogTitle className="text-left mb-[19px] pl-6">
-                  All BOARDS ({state.allBoards.length})
+                  All BOARDS ({boards.length})
                 </DialogTitle>
               </DialogHeader>
               <BoardToggle />
@@ -140,9 +140,9 @@ export function Navbar() {
           {/* <DropdownMenuItem className="text-medium-grey ">
             Edit Board
           </DropdownMenuItem> */}
-          <BoardForm mode="edit" board={state.board} />
+          <BoardForm mode="edit" board={selectedBoard} />
 
-          <DeleteConfirmationDialog item={state.board} />
+          <DeleteConfirmationDialog item={selectedBoard} />
           <Button className="w-full" onClick={() => signOut()}>
             sign out
           </Button>
@@ -152,7 +152,12 @@ export function Navbar() {
   );
 }
 
-export function DeleteConfirmationDialog({ item }: { item: Board | Task }) {
+export function DeleteConfirmationDialog({
+  item,
+}: {
+  item: FullBoard | FullTask | null;
+}) {
+  if (!item) return;
   return (
     <Dialog>
       <DialogTrigger asChild>
