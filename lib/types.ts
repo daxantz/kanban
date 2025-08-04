@@ -1,7 +1,6 @@
-import type { Board, Column, Task } from "@prisma/client";
+import type { Board, Column, Task, Subtask } from "@prisma/client";
 
 // Subtask is just a Task with a parent
-export type Subtask = Task;
 
 // Task includes nested subtasks (self-reference)
 export type FullTask = Task & {
