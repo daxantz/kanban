@@ -11,6 +11,7 @@ import Image from "next/image";
 import { X } from "lucide-react";
 import { createBoard } from "@/app/actions/actions";
 import { FullBoard } from "@/lib/types";
+import { useBoardContext } from "@/lib/context/BoardContext";
 
 type BoardFormProps = {
   mode: "create" | "edit";
@@ -22,12 +23,17 @@ const initialState = {
 };
 
 const BoardForm = ({ mode, board }: BoardFormProps) => {
-  const [columns, setColumns] = React.useState<string[]>(
-    mode === "edit" && board?.columns.length
-      ? board.columns.map((col) => col.name)
-      : [""]
-  );
-  const [state, formAction] = useActionState(createBoard, initialState);
+  const { setBoards } = useBoardContext();
+  const [columns, setColumns] = React.useState<string[]>(() => {
+    //  mode === "edit" && board?.columns.length
+    //   ? board.columns.map((col) => col.name)
+    //   : [""]
+
+    if (!board?.columns) return [""];
+
+    return mode === "edit" ? board.columns.map((col) => col.name) : [""];
+  });
+  const [state] = useActionState(createBoard, initialState);
   function addColumn() {
     setColumns((prev) => [...prev, ""]);
   }
@@ -43,6 +49,12 @@ const BoardForm = ({ mode, board }: BoardFormProps) => {
   //     return newCols;
   //   });
   // }
+  async function handleSubmit(formData: FormData) {
+    const newBoard = await createBoard({ message: "" }, formData);
+    setBoards((boards) => {
+      return [...boards, newBoard?.board as FullBoard];
+    });
+  }
 
   return (
     <Dialog>
@@ -79,7 +91,7 @@ const BoardForm = ({ mode, board }: BoardFormProps) => {
       <DialogContent>
         <form
           method="post"
-          action={formAction} // Your server action or API route
+          action={handleSubmit} // Your server action or API route
           className="w-full"
         >
           <DialogHeader>
