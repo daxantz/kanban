@@ -8,7 +8,7 @@ const Column = ({ column }: { column: FullColumn }) => {
         {column.name} ({column.tasks.length})
       </p>
       <div className="flex flex-col gap-[20px] ">
-        {column.tasks.map((todo) => (
+        {column.tasks?.map((todo) => (
           <TodoCard todo={todo} key={todo.title} column={column} />
         ))}
       </div>
