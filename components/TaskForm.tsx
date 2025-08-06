@@ -20,25 +20,23 @@ import { Textarea } from "./ui/textarea";
 import { useRouter } from "next/navigation";
 import { Subtask } from "@prisma/client";
 import { FullTask } from "@/lib/types";
-import { randomUUID } from "crypto";
 
 type TaskFormProps = {
   mode: "create" | "edit";
-  task?: FullTask;
+  task?: FullTask | undefined;
 };
 
 const initialState = { message: "", task: undefined };
 
 const TaskForm = ({ mode, task }: TaskFormProps) => {
   const { selectedBoard } = useBoardContext();
-
-  const [state] = useActionState(createTask, initialState);
-  const router = useRouter();
+  const [state, formAction] = useActionState(createTask, initialState);
   const [subtasks, setSubtasks] = useState<string[]>(
     mode === "edit" && task?.subtasks.length
       ? task.subtasks.map((st: Subtask) => st.title)
       : [""]
   );
+  const router = useRouter();
 
   function addSubtask() {
     setSubtasks((prev) => [...prev, ""]);
@@ -48,23 +46,18 @@ const TaskForm = ({ mode, task }: TaskFormProps) => {
     setSubtasks((prev) => prev.filter((_, i) => i !== index));
   }
   async function handleSubmit(formData: FormData) {
-    await createTask({ message: "" }, formData);
+    formData.append("boardId", selectedBoard?.id ?? "");
+    formAction(formData);
     startTransition(() => {
       router.refresh();
     });
-    //setTasks here
-    // setBoards((boards) => {
-    //   return [...boards, newBoard?.board as FullBoard];
-    // });
   }
+
   return (
     <Dialog>
       <DialogTrigger asChild disabled={!selectedBoard?.columns}>
         {mode === "create" ? (
-          <Button
-            className="bg-main-purple rounded-3xl hover:bg-purple-hover hover:cursor-pointer"
-            disabled={!selectedBoard?.columns.length}
-          >
+          <Button className="bg-main-purple rounded-3xl hover:bg-purple-hover hover:cursor-pointer">
             <Image
               src={"/icon-add-task-mobile.svg"}
               width={12}
@@ -134,7 +127,10 @@ const TaskForm = ({ mode, task }: TaskFormProps) => {
               Subtasks
             </label>
             {subtasks.map((sub, index) => (
-              <div key={randomUUID()} className="flex items-center gap-2">
+              <div
+                key={Math.floor(Math.random() * index)}
+                className="flex items-center gap-2"
+              >
                 <Input
                   type="text"
                   name={`subtasks.${index}`}
@@ -171,9 +167,7 @@ const TaskForm = ({ mode, task }: TaskFormProps) => {
             <select
               name="status"
               id="status"
-              defaultValue={
-                task?.status || selectedBoard?.columns[0]?.name || ""
-              }
+              defaultValue={task?.status || ""}
               required
               className="w-full border rounded px-3 py-2"
             >
