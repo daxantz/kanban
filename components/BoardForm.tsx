@@ -1,4 +1,4 @@
-import React, { useActionState } from "react";
+import React, { startTransition, useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -9,13 +9,15 @@ import {
 } from "./ui/dialog";
 import Image from "next/image";
 import { X } from "lucide-react";
-import { createBoard } from "@/app/actions/actions";
+import { createBoard, updateBoard } from "@/app/actions/actions";
 import { FullBoard } from "@/lib/types";
 import { useBoardContext } from "@/lib/context/BoardContext";
+import { useRouter } from "next/navigation";
 
 type BoardFormProps = {
   mode: "create" | "edit";
   board?: FullBoard | null;
+  boards?: FullBoard[];
 };
 
 const initialState = {
@@ -23,7 +25,8 @@ const initialState = {
 };
 
 const BoardForm = ({ mode, board }: BoardFormProps) => {
-  const { setBoards } = useBoardContext();
+  const { setBoards, setSelectedBoard } = useBoardContext();
+  const router = useRouter();
   const [columns, setColumns] = React.useState<string[]>(() => {
     //  mode === "edit" && board?.columns.length
     //   ? board.columns.map((col) => col.name)
@@ -50,10 +53,26 @@ const BoardForm = ({ mode, board }: BoardFormProps) => {
   //   });
   // }
   async function handleSubmit(formData: FormData) {
-    const newBoard = await createBoard({ message: "" }, formData);
-    setBoards((boards) => {
-      return [...boards, newBoard?.board as FullBoard];
-    });
+    if (mode === "create") {
+      const newBoard = await createBoard({ message: "" }, formData);
+      setBoards((boards) => {
+        return [...boards, newBoard?.board as FullBoard];
+      });
+    } else if (mode === "edit" && board) {
+      formData.append("boardId", board?.id);
+      const updatedBoard = await updateBoard({ message: "" }, formData);
+      setBoards((boards) => {
+        const allBoards: FullBoard[] = [...boards, updatedBoard] as FullBoard[];
+        return allBoards.filter((b) => b.name !== board.name);
+      });
+      startTransition(() => {
+        if (updatedBoard) {
+          setSelectedBoard(updatedBoard?.board as FullBoard);
+        }
+
+        router.refresh();
+      });
+    }
   }
 
   return (
@@ -131,6 +150,7 @@ const BoardForm = ({ mode, board }: BoardFormProps) => {
                 <input
                   type="text"
                   name={`columns.${index}`}
+                  defaultValue={col}
                   // onChange={(e) => updateColumnName(index, e.target.value)}
                   placeholder={`Column ${index + 1}`}
                   className="flex-grow rounded border px-3 py-2"
