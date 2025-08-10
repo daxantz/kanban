@@ -62,18 +62,23 @@ import { useRouter } from "next/navigation";
 //   },
 // ];
 
-export function Navbar() {
-  const { boards, selectedBoard, setBoards } = useBoardContext();
+export function Navbar({ boards }: { boards: FullBoard[] }) {
+  const { selectedBoard, setBoards } = useBoardContext();
   const { data } = useSession();
   // console.log(session?.user);
   const [isOpen, setIsOpen] = React.useState(false);
   const userName = data?.user.name?.split(" ")[0];
+  const router = useRouter();
+  const { setSelectedBoard } = useBoardContext();
   async function handleDelete() {
     if (selectedBoard) {
       await deleteBoard(selectedBoard?.id);
       setBoards((boards) => {
         return boards.filter((b) => b.id !== selectedBoard?.id);
       });
+      router.push(`?board=${boards[0].id}`);
+      setSelectedBoard(boards[0]);
+      router.refresh();
     }
   }
   // if (!session)
@@ -123,10 +128,10 @@ export function Navbar() {
             <div>
               <DialogHeader>
                 <DialogTitle className="text-left mb-[19px] pl-6">
-                  All BOARDS ({boards.length})
+                  All BOARDS ({boards?.length})
                 </DialogTitle>
               </DialogHeader>
-              <BoardToggle />
+              <BoardToggle boards={boards} />
             </div>
             <DarkmodeToggle />
           </DialogContent>
@@ -149,7 +154,7 @@ export function Navbar() {
           {/* <DropdownMenuItem className="text-medium-grey ">
             Edit Board
           </DropdownMenuItem> */}
-          <BoardForm mode="edit" board={selectedBoard} />
+          <BoardForm mode="edit" board={selectedBoard} boards={boards} />
 
           <DeleteConfirmationDialog
             item={selectedBoard}
@@ -172,8 +177,7 @@ export function DeleteConfirmationDialog({
   handleDelete: () => Promise<void>;
 }) {
   const [isOpen, setIsOpen] = React.useState(false);
-  const { boards, setSelectedBoard } = useBoardContext();
-  const router = useRouter();
+
   if (!item) return;
 
   return (
@@ -216,8 +220,6 @@ export function DeleteConfirmationDialog({
             onClick={() => {
               handleDelete();
               setIsOpen(false);
-              router.push(`?board=${boards[0].id}`);
-              setSelectedBoard(boards[0]);
             }}
           >
             Delete

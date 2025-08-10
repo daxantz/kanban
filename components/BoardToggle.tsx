@@ -8,9 +8,10 @@ import { useBoardContext } from "@/lib/context/BoardContext";
 
 import BoardForm from "./BoardForm";
 import { useRouter } from "next/navigation";
+import { FullBoard } from "@/lib/types";
 
-const BoardToggle = () => {
-  const { boards, selectedBoard, setSelectedBoard } = useBoardContext();
+const BoardToggle = ({ boards }: { boards: FullBoard[] }) => {
+  const { selectedBoard, setSelectedBoard } = useBoardContext();
   const [value, setValue] = React.useState(selectedBoard?.name);
   const router = useRouter();
   function handleBoardChange(boardName: string) {
@@ -25,10 +26,11 @@ const BoardToggle = () => {
       router.push(`?board=${selectedBoard.id}`);
     }
   }
+
   return (
     <div>
       <p className="ml-6 mb-[19px] font-bold text-medium-grey text-base">
-        ALL BOARDS ({boards.length})
+        ALL BOARDS ({boards?.length})
       </p>
       <ToggleGroup
         type="single"
@@ -36,20 +38,24 @@ const BoardToggle = () => {
         value={value}
         onValueChange={handleBoardChange}
       >
-        {boards.map((board) => (
+        {boards?.map((board) => (
           <ToggleGroupItem
-            key={board.name}
-            value={board.name}
-            className="data-[state=on]:bg-main-purple hover:cursor-pointer data-[state=on]:text-white text-base text-medium-grey font-bold py-4 pl-6 pr-16 rounded-r-full w-full justify-start"
+            key={board?.id}
+            value={board?.name}
+            className={cn(
+              " hover:cursor-pointer data-[state=on]:text-white text-base text-medium-grey font-bold py-4 pl-6 pr-16 rounded-r-full w-full justify-start",
+              selectedBoard?.name === board.name &&
+                "data-[state=on]:bg-main-purple"
+            )}
           >
             <Image
               src={"/icon-board.svg"}
               height={16}
               width={16}
               alt="board logo"
-              className={cn(value === board.name && "invert brightness-0")}
+              className={cn(value === board?.name && "invert brightness-0")}
             />
-            <span> {board.name}</span>
+            <span> {board?.name}</span>
           </ToggleGroupItem>
         ))}
       </ToggleGroup>

@@ -5,8 +5,9 @@ import React, { useState } from "react";
 import BoardToggle from "./BoardToggle";
 import DarkmodeToggle from "./DarkmodeToggle";
 import { Button } from "./ui/button";
+import { FullBoard } from "@/lib/types";
 
-const Sidebar = () => {
+const Sidebar = ({ boards }: { boards: FullBoard[] }) => {
   const [isHidden, setIsHidden] = useState(false);
 
   if (isHidden) return <SidebarToggle setIsHidden={setIsHidden} />;
@@ -26,7 +27,7 @@ const Sidebar = () => {
       </div>
 
       <div className=" my-[47px]  pr-[20px] flex flex-col justify-between  h-screen">
-        <BoardToggle />
+        <BoardToggle boards={boards} />
         <div className="flex flex-col gap-4">
           <DarkmodeToggle />
           <Button
