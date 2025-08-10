@@ -51,8 +51,17 @@ export async function createBoard(
         create: columns.map((col) => ({ name: col })),
       },
     },
+    include: {
+      columns: {
+        include: {
+          tasks: {
+            include: { subtasks: true },
+          },
+        },
+      },
+    },
   });
-
+  revalidatePath("/");
   return { message: "Board created successfully", board: board };
 }
 
@@ -106,4 +115,82 @@ export async function createTask(
   });
   revalidatePath("/");
   return { message: "Task created", task };
+}
+
+export async function deleteTask(taskId: string) {
+  await prisma.task.delete({ where: { id: taskId } });
+  revalidatePath("/");
+  return { message: "Task Deleted" };
+}
+
+export async function updateBoard(
+  prevState: { message: string },
+  formData: FormData
+): Promise<{ message: string; board?: Board }> {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user.email) {
+    return { message: "Unauthorized" };
+  }
+
+  const boardId = formData.get("boardId") as string;
+  const boardName = formData.get("name") as string;
+
+  if (!boardId || !boardName) {
+    return { message: "Missing board ID or name" };
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+  });
+
+  if (!user) return { message: "User not found" };
+
+  const board = await prisma.board.findUnique({
+    where: { id: boardId },
+    include: { columns: true },
+  });
+
+  if (!board || board.ownerId !== user.id) {
+    return { message: "Board not found or access denied" };
+  }
+
+  // Update board name
+  const updatedBoard = await prisma.board.update({
+    where: { id: boardId },
+    data: {
+      name: boardName,
+    },
+    include: {
+      columns: {
+        include: {
+          tasks: {
+            include: { subtasks: true },
+          },
+        },
+      },
+    },
+  });
+  let index = 0;
+  // Loop through formData to update column names
+  for (const [key, value] of formData.entries()) {
+    if (
+      key.startsWith("columns.") &&
+      typeof value === "string" &&
+      value.trim()
+    ) {
+      const newName = value.trim();
+
+      await prisma.column.update({
+        where: { id: updatedBoard.columns[index].id },
+        data: { name: newName },
+      });
+      index++;
+    }
+  }
+  revalidatePath("/", "layout");
+  return {
+    message: "Board and column names updated successfully",
+    board: updatedBoard,
+  };
 }
