@@ -23,15 +23,26 @@ import TaskForm from "./TaskForm";
 import { FullColumn, FullTask } from "@/lib/types";
 import SubtaskItem from "./SubtaskItem";
 import { useBoardContext } from "@/lib/context/BoardContext";
+import { startTransition } from "react";
+import { deleteTask } from "@/app/actions/actions";
+import { useRouter } from "next/navigation";
 
 const TodoCard = ({ todo, column }: { todo: FullTask; column: FullColumn }) => {
   const { selectedBoard } = useBoardContext();
+  const router = useRouter();
+  // const [state] = useActionState(deleteTask, { message: "" });
   if (!selectedBoard?.columns) return;
   const statuses = selectedBoard?.columns.map((c) => c.name);
   // const completedSubtasks = todo.subtasks.filter(
   //   (todo) => todo.isCompleted === true
   // );
-  async function handleDelete() {}
+
+  async function handleDelete() {
+    await deleteTask(todo?.id);
+    startTransition(() => {
+      router.refresh();
+    });
+  }
 
   return (
     <Dialog>
