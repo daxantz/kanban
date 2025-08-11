@@ -194,3 +194,80 @@ export async function updateBoard(
     board: updatedBoard,
   };
 }
+
+export async function updateTask(
+  prevState: { message: string },
+  formData: FormData
+): Promise<{ message: string; task?: FullTask }> {
+  const session = await getServerSession(authOptions);
+
+  if (!session?.user.email) {
+    return { message: "Unauthorized" };
+  }
+
+  const taskId = formData.get("taskId") as string;
+  const title = formData.get("title") as string;
+  const description = formData.get("description") as string;
+  const status = formData.get("status") as string;
+
+  if (!taskId || !title || !description || !status) {
+    return { message: "Missing required fields" };
+  }
+
+  // Get task and check ownership via board relationship
+  const task = await prisma.task.findUnique({
+    where: { id: taskId },
+    include: { column: { include: { board: true } }, subtasks: true },
+  });
+
+  if (!task) return { message: "Task not found" };
+  if (task.column.board.ownerId !== session.user.id) {
+    return { message: "Access denied" };
+  }
+
+  // Update main task fields
+  const updatedTask = await prisma.task.update({
+    where: { id: taskId },
+    data: {
+      title,
+      description,
+      status,
+    },
+    include: { subtasks: true },
+  });
+
+  // Update subtasks from form data
+  let subtaskIndex = 0;
+  for (const [key, value] of formData.entries()) {
+    if (
+      key.startsWith("subtasks.") &&
+      typeof value === "string" &&
+      value.trim()
+    ) {
+      const newTitle = value.trim();
+
+      // If existing subtask exists at this index, update it
+      if (updatedTask.subtasks[subtaskIndex]) {
+        await prisma.subtask.update({
+          where: { id: updatedTask.subtasks[subtaskIndex].id },
+          data: { title: newTitle },
+        });
+      } else {
+        // Otherwise, create a new subtask linked to this task
+        await prisma.subtask.create({
+          data: { title: newTitle, taskId: updatedTask.id },
+        });
+      }
+
+      subtaskIndex++;
+    }
+  }
+
+  // Refresh data on client
+  revalidatePath("/");
+
+  return {
+    message: "Task updated successfully",
+    task: updatedTask,
+  };
+}

@@ -12,12 +12,12 @@ import {
 import Image from "next/image";
 import { X } from "lucide-react";
 import { useBoardContext } from "@/lib/context/BoardContext";
-import { createTask } from "@/app/actions/actions";
+import { createTask, updateTask } from "@/app/actions/actions";
 
 import { Input } from "@/components/ui/input";
 import { Textarea } from "./ui/textarea";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Subtask } from "@prisma/client";
 import { FullTask } from "@/lib/types";
 
@@ -31,12 +31,18 @@ const initialState = { message: "", task: undefined };
 const TaskForm = ({ mode, task }: TaskFormProps) => {
   const { selectedBoard } = useBoardContext();
   const [state, formAction] = useActionState(createTask, initialState);
+  const [taskActionState, updateTaskAction] = useActionState(
+    updateTask,
+    initialState
+  );
   const [subtasks, setSubtasks] = useState<string[]>(
     mode === "edit" && task?.subtasks.length
       ? task.subtasks.map((st: Subtask) => st.title)
       : [""]
   );
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const boardId = searchParams.get("board");
 
   function addSubtask() {
     setSubtasks((prev) => [...prev, ""]);
@@ -46,8 +52,17 @@ const TaskForm = ({ mode, task }: TaskFormProps) => {
     setSubtasks((prev) => prev.filter((_, i) => i !== index));
   }
   async function handleSubmit(formData: FormData) {
-    formData.append("boardId", selectedBoard?.id ?? "");
-    formAction(formData);
+    if (mode === "create") {
+      formData.append("boardId", selectedBoard?.id ?? "");
+      formAction(formData);
+    } else {
+      if (task) {
+        formData.append("taskId", task?.id);
+        formData.append("board", boardId as string);
+        updateTaskAction(formData);
+      }
+    }
+
     startTransition(() => {
       router.refresh();
     });
@@ -83,6 +98,7 @@ const TaskForm = ({ mode, task }: TaskFormProps) => {
               {mode === "create" ? "Add New Task" : "Edit Task"}
             </DialogTitle>
             <p>{state.message}</p>
+            <p>{taskActionState.message}</p>
           </DialogHeader>
 
           {/* Title */}
