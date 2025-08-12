@@ -1,14 +1,24 @@
 import { FullColumn } from "@/lib/types";
 import TodoCard from "./TodoCard";
+import { prisma } from "@/lib/prisma";
 
-const Column = ({ column }: { column: FullColumn }) => {
+const Column = async ({ column }: { column: FullColumn }) => {
+  const tasks = await prisma.task.findMany({
+    where: {
+      status: column.name,
+    },
+    include: {
+      subtasks: true,
+    },
+  });
+
   return (
     <div className="flex flex-col gap-6">
       <p className="text-medium-grey font-bold">
-        {column.name} ({column.tasks.length})
+        {column.name} ({tasks.length})
       </p>
       <div className="flex flex-col gap-[20px] ">
-        {column.tasks?.map((todo) => (
+        {tasks?.map((todo) => (
           <TodoCard todo={todo} key={todo.title} column={column} />
         ))}
       </div>
