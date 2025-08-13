@@ -1,4 +1,5 @@
 import Column from "@/components/Column";
+import ColumnModal from "@/components/ColumnModal";
 
 import { Button } from "@/components/ui/button";
 
@@ -37,6 +38,7 @@ export default async function Home({ searchParams }: Props) {
           />
           Add New Column
         </Button>
+        <ColumnModal hasCols={false} />
       </div>
     );
 
@@ -47,9 +49,7 @@ export default async function Home({ searchParams }: Props) {
       ))}
       <div className="flex flex-col gap-6">
         <div className="bg-transparent text-transparent">pcaeholder</div>
-        <div className="rounded-sm flex items-center justify-center text-medium-grey font-bold w-[280px] h-screen bg-lines-light hover:cursor-pointer self-center text-xl dark:bg-very-dark-grey">
-          + New Column
-        </div>
+        <ColumnModal hasCols={true} />
       </div>
     </div>
   );
