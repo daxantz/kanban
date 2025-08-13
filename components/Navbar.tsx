@@ -63,13 +63,13 @@ import { useRouter } from "next/navigation";
 // ];
 
 export function Navbar({ boards }: { boards: FullBoard[] }) {
-  const { selectedBoard, setBoards } = useBoardContext();
+  const { selectedBoard, setBoards, setSelectedBoard } = useBoardContext();
   const { data } = useSession();
   // console.log(session?.user);
   const [isOpen, setIsOpen] = React.useState(false);
   const userName = data?.user.name?.split(" ")[0];
   const router = useRouter();
-  const { setSelectedBoard } = useBoardContext();
+
   async function handleDelete() {
     if (selectedBoard) {
       await deleteBoard(selectedBoard?.id);
