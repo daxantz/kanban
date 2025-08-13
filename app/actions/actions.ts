@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { authOptions } from "@/lib/authOptions";
 import { getServerSession } from "next-auth";
-import { Board } from "@prisma/client";
+import { Board, Column } from "@prisma/client";
 import { FullTask } from "@/lib/types";
 import { revalidatePath } from "next/cache";
 
@@ -270,4 +270,48 @@ export async function updateTask(
     message: "Task updated successfully",
     task: updatedTask,
   };
+}
+
+export async function createColumn(
+  prevState: { message: string; column?: Column },
+  formData: FormData
+): Promise<{ message: string; column?: Column }> {
+  const session = await getServerSession(authOptions);
+  const name = formData.get("columnName") as string;
+  const boardId = formData.get("boardId") as string;
+
+  if (!session?.user.email) {
+    return { message: "Unauthorized" };
+  }
+
+  if (!boardId || !name) {
+    return { message: "Missing board ID or column name" };
+  }
+
+  const board = await prisma.board.findUnique({
+    where: { id: boardId },
+    include: { columns: true },
+  });
+
+  if (!board) {
+    return { message: "Board not found" };
+  }
+
+  // Optional: prevent duplicate column names in the same board
+  const existingColumn = board.columns.find(
+    (col) => col.name.toLowerCase() === name.toLowerCase()
+  );
+  if (existingColumn) {
+    return { message: "A column with this name already exists in this board" };
+  }
+
+  const column = await prisma.column.create({
+    data: {
+      name,
+      boardId,
+    },
+  });
+
+  revalidatePath("/");
+  return { message: "Column created successfully", column };
 }
