@@ -10,7 +10,7 @@ type Props = {
   searchParams: { [key: string]: string | string[] | undefined };
 };
 export default async function Home({ searchParams }: Props) {
-  const boardId = await searchParams?.board;
+  const { board: boardId } = await searchParams;
   const columns = await prisma.column.findMany({
     where: {
       boardId: boardId as string,
