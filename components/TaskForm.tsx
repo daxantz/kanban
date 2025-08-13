@@ -19,7 +19,8 @@ import { Textarea } from "./ui/textarea";
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { Subtask } from "@prisma/client";
-import { FullTask } from "@/lib/types";
+import { FullColumn, FullTask } from "@/lib/types";
+import useSWR from "swr";
 
 type TaskFormProps = {
   mode: "create" | "edit";
@@ -27,14 +28,20 @@ type TaskFormProps = {
 };
 
 const initialState = { message: "", task: undefined };
-
+const fetcher = (url: string) =>
+  fetch(url, { cache: "no-store" }).then((res) => res.json());
 const TaskForm = ({ mode, task }: TaskFormProps) => {
   const { selectedBoard } = useBoardContext();
+  const { data: columns } = useSWR(
+    selectedBoard?.id ? `/api/columns?boardId=${selectedBoard.id}` : null,
+    fetcher
+  );
   const [state, formAction] = useActionState(createTask, initialState);
   const [taskActionState, updateTaskAction] = useActionState(
     updateTask,
     initialState
   );
+
   const [subtasks, setSubtasks] = useState<string[]>(
     mode === "edit" && task?.subtasks.length
       ? task.subtasks.map((st: Subtask) => st.title)
@@ -187,7 +194,7 @@ const TaskForm = ({ mode, task }: TaskFormProps) => {
               required
               className="w-full border rounded px-3 py-2"
             >
-              {selectedBoard?.columns.map((col) => (
+              {columns?.map((col: FullColumn) => (
                 <option key={col.name} value={col.name}>
                   {col.name}
                 </option>
