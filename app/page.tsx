@@ -1,10 +1,7 @@
 import Column from "@/components/Column";
 import ColumnModal from "@/components/ColumnModal";
 
-import { Button } from "@/components/ui/button";
-
 import { prisma } from "@/lib/prisma";
-import Image from "next/image";
 
 type Props = {
   searchParams: { [key: string]: string | string[] | undefined };
@@ -29,15 +26,7 @@ export default async function Home({ searchParams }: Props) {
         <p className="text-medium-grey font-bold text-center mb-6">
           This board is empty. Create a new column to get started.
         </p>
-        <Button className="bg-main-purple rounded-4xl font-bold hover:cursor-pointer hover:bg-purple-hover ">
-          <Image
-            src={"/icon-add-task-mobile.svg"}
-            alt="plus icon"
-            width={8}
-            height={5}
-          />
-          Add New Column
-        </Button>
+
         <ColumnModal hasCols={false} />
       </div>
     );
