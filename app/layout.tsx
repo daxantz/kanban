@@ -51,9 +51,9 @@ export default async function RootLayout({
             <BoardProvider initialBoards={boards}>
               {session ? (
                 <div className="flex">
-                  <Sidebar />
+                  <Sidebar boards={boards} />
                   <main className="w-full">
-                    <Navbar />
+                    <Navbar boards={boards} />
                     {children}
                   </main>
                 </div>

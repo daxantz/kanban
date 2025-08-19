@@ -103,15 +103,23 @@ model Column {
 }
 
 model Task {
-  id        String   @id @default(cuid())
-  title    String
-  columnId   String
-  column    Column     @relation(fields: [columnId], references: [id], onDelete: Cascade)
-  parentId      String?   // Null means it's a parent task
-  parent        Task?     @relation("Subtasks", fields: [parentId], references: [id])
-  subtasks      Task[]    @relation("Subtasks") // The children
+  id          String   @id @default(cuid())
+  title       String
   description String?
-  status String
+  status      String
+  columnId    String
+  column      Column   @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  subtasks    Subtask[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Subtask {
+  id        String   @id @default(cuid())
+  title     String
+  isDone    Boolean  @default(false)
+  taskId    String
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

@@ -1,4 +1,4 @@
-import React, { useActionState } from "react";
+import React, { startTransition, useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -9,12 +9,15 @@ import {
 } from "./ui/dialog";
 import Image from "next/image";
 import { X } from "lucide-react";
-import { createBoard } from "@/app/actions/actions";
+import { createBoard, updateBoard } from "@/app/actions/actions";
 import { FullBoard } from "@/lib/types";
+import { useBoardContext } from "@/lib/context/BoardContext";
+import { useRouter } from "next/navigation";
 
 type BoardFormProps = {
   mode: "create" | "edit";
   board?: FullBoard | null;
+  boards?: FullBoard[];
 };
 
 const initialState = {
@@ -22,12 +25,18 @@ const initialState = {
 };
 
 const BoardForm = ({ mode, board }: BoardFormProps) => {
-  const [columns, setColumns] = React.useState<string[]>(
-    mode === "edit" && board?.columns.length
-      ? board.columns.map((col) => col.name)
-      : [""]
-  );
-  const [state, formAction] = useActionState(createBoard, initialState);
+  const { setBoards, setSelectedBoard } = useBoardContext();
+  const router = useRouter();
+  const [columns, setColumns] = React.useState<string[]>(() => {
+    //  mode === "edit" && board?.columns.length
+    //   ? board.columns.map((col) => col.name)
+    //   : [""]
+
+    if (!board?.columns) return [""];
+
+    return mode === "edit" ? board.columns.map((col) => col.name) : [""];
+  });
+  const [state] = useActionState(createBoard, initialState);
   function addColumn() {
     setColumns((prev) => [...prev, ""]);
   }
@@ -43,6 +52,28 @@ const BoardForm = ({ mode, board }: BoardFormProps) => {
   //     return newCols;
   //   });
   // }
+  async function handleSubmit(formData: FormData) {
+    if (mode === "create") {
+      const newBoard = await createBoard({ message: "" }, formData);
+      setBoards((boards) => {
+        return [...boards, newBoard?.board as FullBoard];
+      });
+    } else if (mode === "edit" && board) {
+      formData.append("boardId", board?.id);
+      const updatedBoard = await updateBoard({ message: "" }, formData);
+      setBoards((boards) => {
+        const allBoards: FullBoard[] = [...boards, updatedBoard] as FullBoard[];
+        return allBoards.filter((b) => b.name !== board.name);
+      });
+      startTransition(() => {
+        if (updatedBoard) {
+          setSelectedBoard(updatedBoard?.board as FullBoard);
+        }
+
+        router.refresh();
+      });
+    }
+  }
 
   return (
     <Dialog>
@@ -79,7 +110,7 @@ const BoardForm = ({ mode, board }: BoardFormProps) => {
       <DialogContent>
         <form
           method="post"
-          action={formAction} // Your server action or API route
+          action={handleSubmit} // Your server action or API route
           className="w-full"
         >
           <DialogHeader>
@@ -119,6 +150,7 @@ const BoardForm = ({ mode, board }: BoardFormProps) => {
                 <input
                   type="text"
                   name={`columns.${index}`}
+                  defaultValue={col}
                   // onChange={(e) => updateColumnName(index, e.target.value)}
                   placeholder={`Column ${index + 1}`}
                   className="flex-grow rounded border px-3 py-2"

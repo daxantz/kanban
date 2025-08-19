@@ -21,6 +21,8 @@ import DeleteDescription from "./DeleteDescription";
 import TaskForm from "./TaskForm";
 import BoardForm from "./BoardForm";
 import { signOut, useSession } from "next-auth/react";
+import { deleteBoard } from "@/app/actions/actions";
+import { useRouter } from "next/navigation";
 
 // const components: { title: string; href: string; description: string }[] = [
 //   {
@@ -60,13 +62,25 @@ import { signOut, useSession } from "next-auth/react";
 //   },
 // ];
 
-export function Navbar() {
-  const { boards, selectedBoard } = useBoardContext();
+export function Navbar({ boards }: { boards: FullBoard[] }) {
+  const { selectedBoard, setBoards, setSelectedBoard } = useBoardContext();
   const { data } = useSession();
   // console.log(session?.user);
   const [isOpen, setIsOpen] = React.useState(false);
   const userName = data?.user.name?.split(" ")[0];
+  const router = useRouter();
 
+  async function handleDelete() {
+    if (selectedBoard) {
+      await deleteBoard(selectedBoard?.id);
+      setBoards((boards) => {
+        return boards.filter((b) => b.id !== selectedBoard?.id);
+      });
+      router.push(`?board=${boards[0].id}`);
+      setSelectedBoard(boards[0]);
+      router.refresh();
+    }
+  }
   // if (!session)
   //   return (
   //     <div>
@@ -114,10 +128,10 @@ export function Navbar() {
             <div>
               <DialogHeader>
                 <DialogTitle className="text-left mb-[19px] pl-6">
-                  All BOARDS ({boards.length})
+                  All BOARDS ({boards?.length})
                 </DialogTitle>
               </DialogHeader>
-              <BoardToggle />
+              <BoardToggle boards={boards} />
             </div>
             <DarkmodeToggle />
           </DialogContent>
@@ -140,9 +154,12 @@ export function Navbar() {
           {/* <DropdownMenuItem className="text-medium-grey ">
             Edit Board
           </DropdownMenuItem> */}
-          <BoardForm mode="edit" board={selectedBoard} />
+          <BoardForm mode="edit" board={selectedBoard} boards={boards} />
 
-          <DeleteConfirmationDialog item={selectedBoard} />
+          <DeleteConfirmationDialog
+            item={selectedBoard}
+            handleDelete={handleDelete}
+          />
           <Button className="w-full" onClick={() => signOut()}>
             sign out
           </Button>
@@ -154,12 +171,17 @@ export function Navbar() {
 
 export function DeleteConfirmationDialog({
   item,
+  handleDelete,
 }: {
   item: FullBoard | FullTask | null;
+  handleDelete: () => Promise<void>;
 }) {
+  const [isOpen, setIsOpen] = React.useState(false);
+
   if (!item) return;
+
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button
           variant="ghost"
@@ -195,6 +217,10 @@ export function DeleteConfirmationDialog({
           <Button
             variant="destructive"
             className="bg-red rounded-[20px] font-bold px-20 hover:bg-red-hover hover:cursor-pointer md:order-1"
+            onClick={() => {
+              handleDelete();
+              setIsOpen(false);
+            }}
           >
             Delete
           </Button>

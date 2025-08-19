@@ -23,14 +23,26 @@ import TaskForm from "./TaskForm";
 import { FullColumn, FullTask } from "@/lib/types";
 import SubtaskItem from "./SubtaskItem";
 import { useBoardContext } from "@/lib/context/BoardContext";
+import { startTransition } from "react";
+import { deleteTask } from "@/app/actions/actions";
+import { useRouter } from "next/navigation";
 
 const TodoCard = ({ todo, column }: { todo: FullTask; column: FullColumn }) => {
   const { selectedBoard } = useBoardContext();
-
+  const router = useRouter();
+  // const [state] = useActionState(deleteTask, { message: "" });
+  if (!selectedBoard?.columns) return;
   const statuses = selectedBoard?.columns.map((c) => c.name);
   // const completedSubtasks = todo.subtasks.filter(
   //   (todo) => todo.isCompleted === true
   // );
+
+  async function handleDelete() {
+    await deleteTask(todo?.id);
+    startTransition(() => {
+      router.refresh();
+    });
+  }
 
   return (
     <Dialog>
@@ -43,7 +55,7 @@ const TodoCard = ({ todo, column }: { todo: FullTask; column: FullColumn }) => {
             {todo.title}
           </p>
           <span className="text-medium-grey">
-            0 of {todo.subtasks.length} subtasks
+            0 of {todo?.subtasks?.length} subtasks
           </span>
         </div>
       </DialogTrigger>
@@ -58,7 +70,10 @@ const TodoCard = ({ todo, column }: { todo: FullTask; column: FullColumn }) => {
               </DropdownMenuItem> */}
               <TaskForm mode="edit" task={todo} />
 
-              <DeleteConfirmationDialog item={todo} />
+              <DeleteConfirmationDialog
+                item={todo}
+                handleDelete={handleDelete}
+              />
             </Dropdown>
           </div>
 
@@ -72,9 +87,10 @@ const TodoCard = ({ todo, column }: { todo: FullTask; column: FullColumn }) => {
           {/* Subtasks ({completedSubtasks.length} of {todo.subtasks.length}) */}
         </p>
         <div className="flex flex-col gap-2">
-          {todo.subtasks.map((subtask) => (
-            <SubtaskItem subtask={subtask} key={subtask.title} />
-          ))}
+          {todo.subtasks &&
+            todo.subtasks.map((subtask) => (
+              <SubtaskItem subtask={subtask} key={subtask.title} />
+            ))}
         </div>
         <div>
           <p className="text-medium-grey font-bold mb-2">Current Status</p>

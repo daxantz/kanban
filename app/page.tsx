@@ -1,15 +1,13 @@
 import Column from "@/components/Column";
-
-import { Button } from "@/components/ui/button";
+import ColumnModal from "@/components/ColumnModal";
 
 import { prisma } from "@/lib/prisma";
-import Image from "next/image";
 
 type Props = {
   searchParams: { [key: string]: string | string[] | undefined };
 };
 export default async function Home({ searchParams }: Props) {
-  const boardId = await searchParams?.board;
+  const { board: boardId } = await searchParams;
   const columns = await prisma.column.findMany({
     where: {
       boardId: boardId as string,
@@ -28,15 +26,8 @@ export default async function Home({ searchParams }: Props) {
         <p className="text-medium-grey font-bold text-center mb-6">
           This board is empty. Create a new column to get started.
         </p>
-        <Button className="bg-main-purple rounded-4xl font-bold hover:cursor-pointer hover:bg-purple-hover ">
-          <Image
-            src={"/icon-add-task-mobile.svg"}
-            alt="plus icon"
-            width={8}
-            height={5}
-          />
-          Add New Column
-        </Button>
+
+        <ColumnModal hasCols={false} />
       </div>
     );
 
@@ -47,9 +38,7 @@ export default async function Home({ searchParams }: Props) {
       ))}
       <div className="flex flex-col gap-6">
         <div className="bg-transparent text-transparent">pcaeholder</div>
-        <div className="rounded-sm flex items-center justify-center text-medium-grey font-bold w-[280px] h-screen bg-lines-light hover:cursor-pointer self-center text-xl dark:bg-very-dark-grey">
-          + New Column
-        </div>
+        <ColumnModal hasCols={true} />
       </div>
     </div>
   );
